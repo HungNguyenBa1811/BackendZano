@@ -13,6 +13,27 @@ const adminAttemptsController = new AdminAttemptsController(adminAttemptsService
 
 adminAttemptsRouter.use(authGuard, roleGuard(['admin']));
 
+/**
+ * @openapi
+ * /admin/attempts/{attemptId}:
+ *   get:
+ *     tags:
+ *       - Admin - Attempts
+ *     summary: Lay chi tiet bai lam theo attempt
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: attemptId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Chi tiet attempt
+ *       404:
+ *         description: Khong tim thay attempt
+ */
 adminAttemptsRouter.get(
     '/:attemptId',
     asyncHandler(adminAttemptsController.getAttemptDetail.bind(adminAttemptsController)),

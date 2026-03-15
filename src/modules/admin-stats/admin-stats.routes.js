@@ -66,6 +66,41 @@ adminStatsRouter.use(authGuard, roleGuard(['admin']));
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 adminStatsRouter.get('/summary', asyncHandler(adminStatsController.getSummary.bind(adminStatsController)));
+
+/**
+ * @openapi
+ * /admin/stats/export:
+ *   get:
+ *     tags:
+ *       - Admin - Stats
+ *     summary: Xuat bao cao thong ke
+ *     description: Ban local MVP tra JSON preview cho report export.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           enum: [pdf]
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: examId
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Du lieu bao cao thong ke
+ */
 adminStatsRouter.get('/export', asyncHandler(adminStatsController.exportStats.bind(adminStatsController)));
 
 module.exports = { adminStatsRouter };
