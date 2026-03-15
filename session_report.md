@@ -51,7 +51,8 @@ Nguoi thuc hien: Senior Backend role-play (GitHub Copilot)
 
 - `GET /api/v1/admin/students`
 - `POST /api/v1/admin/students`
-    - Tao account student, default password hash = studentCode (de local test).
+    - Tao account student voi `temporaryPassword` ngau nhien, hash truoc khi luu.
+    - Response kem `mustChangePassword: true` de phuc vu flow doi mat khau lan dau.
 - `PUT /api/v1/admin/students/{studentId}`
 - `DELETE /api/v1/admin/students/{studentId}`
     - Chinh sach local: deactivate (`is_active = 0`).
@@ -126,3 +127,41 @@ Nguoi thuc hien: Senior Backend role-play (GitHub Copilot)
 - [M-2] Da them validate datetime cho `from`/`to` va validate range trong stats export.
 - [M-3] Da cap `maxPage = 10000` cho cac service co pagination.
 - [M-4] Da them audit log khi admin truy cap attempt detail (`admin-attempts.controller.js`).
+
+## 9) Logging system upgrade (2026-03-15)
+
+- Da cai dat va tich hop stack logging:
+    - `winston` cho application logging theo level (`error`, `warn`, `info`, `http`, `debug`).
+    - `morgan` cho HTTP access logging.
+    - `nodemon` cho dev workflow (auto reload).
+
+- Cap nhat `src/shared/logger/logger.js`:
+    - Dev mode: log de doc, co mau theo level, format:
+        - `[INFO]  YYYY-MM-DD HH:mm:ss  message`
+    - Production mode: log JSON an toan cho machine parsing.
+    - Ho tro metadata context (traceId, fields bo sung) tren cung log line.
+
+- Cap nhat `src/shared/middleware/request-logger.js`:
+    - Morgan duoc route qua `logger.http`.
+    - Dev mode: method/status duoc to mau va de doc nhanh.
+    - Production mode: plain string gon, de ingest vao log pipeline.
+    - Co kem `traceId` de truy vet request-end-to-end.
+
+- Cap nhat package scripts:
+    - `npm run dev` su dung `nodemon src/server.js`.
+
+- Ket qua:
+    - Logging da modular hoa, dung duoc cho middleware Express.
+    - Da co phan tach ro pretty logs (dev) va JSON logs (production).
+
+## 10) Logging output mau
+
+- Development (human-readable + mau):
+    - `[INFO]  2026-03-15 16:32:25  Server is running on port 3000  service=backendzano`
+    - `[WARN]  2026-03-15 16:33:01  Slow response detected  service=backendzano`
+    - `[ERROR] 2026-03-15 16:33:05  Database connection failed  service=backendzano`
+    - HTTP: `GET /api/users 200 12.3ms traceId=abc123` (method/status co mau trong terminal)
+
+- Production (JSON-safe):
+    - `{"level":"info","message":"Server is running on port 3000","service":"backendzano","timestamp":"2026-03-15T09:32:25.107Z"}`
+    - `{"level":"http","message":"GET /api/users 200 12.3ms traceId=abc123","service":"backendzano","timestamp":"2026-03-15T09:33:10.000Z"}`
